@@ -31,6 +31,7 @@ async function run() {
 
     const db = client.db("HouseRent");
     const collection = db.collection("addProperties")
+    const bookingProperty = db.collection("bookingHouse")
 
 
     // properti data dkhar jnno
@@ -47,9 +48,62 @@ async function run() {
       res.send(result)
     })
 
+    // dynamic property data dkhbo single data :
+
+    app.get("/allhome/:id",async(req,res)=>{
+      const {id} = req.params;
+      const result = await collection.findOne({
+      _id: new ObjectId(id)
+      })
+    res.send(result)
+    })
+    
+    // booking korar jnno property
+
+app.post("/booking", async (req, res) => {
+  try {
+    const { sessionId } = req.body;
+
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    const booking = {
+      propertyId: session.metadata.propertyId,
+      propertyTitle: session.metadata.propertyName,
+
+      tenantEmail: session.metadata.userEmail,
+      moveInDate: session.metadata.moveInDate,
+      phone: session.metadata.phone,
+      notes: session.metadata.notes,
+
+      bookingAmount: session.amount_total / 100,
+
+      transactionId: session.id,
+
+      paymentStatus: session.payment_status === "paid" ? "Paid" : "Pending",
+      bookingStatus: "Pending",
+
+      createdAt: new Date(),
+    };
+
+    const result = await bookingsCollection.insertOne(booking);
+
+    res.send({
+      success: true,
+      insertedId: result.insertedId,
+    });
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+});
+
+
+
+
+
+
+
     // property data delete korar jnno
  
-
 app.delete("/allhome/:id", async (req, res) => {
   try {
     const { id } = req.params;
