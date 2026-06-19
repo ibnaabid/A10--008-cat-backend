@@ -59,21 +59,28 @@ async function run() {
     })
     
     // booking korar jnno property
-
-app.post("/booking", async (req, res) => {
+app.post("/Bookings", async (req, res) => {
   try {
     const { sessionId } = req.body;
 
+    if (!sessionId) {
+      return res.status(400).send({ error: "SessionId missing" });
+    }
+
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
-    const booking = {
-      propertyId: session.metadata.propertyId,
-      propertyTitle: session.metadata.propertyName,
+    if (!session) {
+      return res.status(404).send({ error: "Session not found" });
+    }
 
-      tenantEmail: session.metadata.userEmail,
-      moveInDate: session.metadata.moveInDate,
-      phone: session.metadata.phone,
-      notes: session.metadata.notes,
+    const bookingPropertyhouse = {
+      propertyId: session.metadata?.propertyId,
+      propertyTitle: session.metadata?.propertyName,
+
+      tenantEmail: session.metadata?.userEmail,
+      moveInDate: session.metadata?.moveInDate,
+      phone: session.metadata?.phone,
+      notes: session.metadata?.notes,
 
       bookingAmount: session.amount_total / 100,
 
@@ -85,17 +92,17 @@ app.post("/booking", async (req, res) => {
       createdAt: new Date(),
     };
 
-    const result = await bookingsCollection.insertOne(booking);
+    const result = await bookingProperty.insertOne(bookingPropertyhouse);
 
     res.send({
       success: true,
       insertedId: result.insertedId,
     });
   } catch (error) {
+    console.error("Booking error:", error);
     res.status(500).send({ error: error.message });
   }
 });
-
 
 
 
