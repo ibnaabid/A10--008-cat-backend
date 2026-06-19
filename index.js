@@ -32,6 +32,7 @@ async function run() {
     const db = client.db("HouseRent");
     const collection = db.collection("addProperties")
     const bookingProperty = db.collection("bookingHouse")
+    const favoriteProperty = db.collection("favourite")
 
 
     // properti data dkhar jnno
@@ -58,54 +59,84 @@ async function run() {
     res.send(result)
     })
     
-    // booking korar jnno property
+
 app.post("/Bookings", async (req, res) => {
   try {
     const { sessionId } = req.body;
 
     if (!sessionId) {
-      return res.status(400).send({ error: "SessionId missing" });
+      return res.status(400).send({ error: "SessionId missing in request body" });
     }
 
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
     if (!session) {
-      return res.status(404).send({ error: "Session not found" });
+      return res.status(404).send({ error: "Session not found on Stripe" });
     }
-
     const bookingPropertyhouse = {
-      propertyId: session.metadata?.propertyId,
-      propertyTitle: session.metadata?.propertyName,
-
-      tenantEmail: session.metadata?.userEmail,
-      moveInDate: session.metadata?.moveInDate,
-      phone: session.metadata?.phone,
-      notes: session.metadata?.notes,
-
-      bookingAmount: session.amount_total / 100,
-
+      propertyId:    session.metadata?.propertyId || "N/A",
+      propertyTitle: session.metadata?.propertyName || "N/A",
+      tenantEmail:   session.metadata?.userEmail || session.customer_details?.email,
+      moveInDate:    session.metadata?.moveInDate || null,
+      phone:         session.metadata?.phone || "N/A",
+      notes:         session.metadata?.notes || "",
+      bookingAmount: session.amount_total ? session.amount_total / 100 : 0,
       transactionId: session.id,
-
       paymentStatus: session.payment_status === "paid" ? "Paid" : "Pending",
-      bookingStatus: "Pending",
-
-      createdAt: new Date(),
+      bookingStatus: "Confirmed", 
+      createdAt:     new Date(),
     };
 
     const result = await bookingProperty.insertOne(bookingPropertyhouse);
 
-    res.send({
+    res.status(201).send({
       success: true,
       insertedId: result.insertedId,
     });
+
   } catch (error) {
-    console.error("Booking error:", error);
+    console.error("Booking error in backend:", error);
     res.status(500).send({ error: error.message });
   }
 });
 
+// property favourite korle oita dkhaar jnnno
+
+app.post("/favorites/:userId",async(req,res)=>{
+  const {userId} = req.params
+  const {title,name,propertyId} = req.body;
+  const find = await favoriteProperty.insertOne({
+        userId: new ObjectId(userId),
+      propertyId: new ObjectId(propertyId),
+      title,
+      name,
+      description,
+      createdAt: new Date(),
+
+  })
+  res.json(find)
+})
+
+app.get("/favorites",async(req,res)=>{
+  const result = await favoriteProperty.find().toArray();
+  res.json(result)
+})
 
 
+// favourite data delete mane non-favour;
+app.delete("/favorites/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await favoriteProperty.deleteOne({
+      userId: new ObjectId(userId),
+    });
+
+    res.send(result);
+  } catch (error) {
+    res.status(500).send({ error: "Delete failed" });
+  }
+});
 
 
 
