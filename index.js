@@ -4,6 +4,8 @@ dotenv.config();
 const express = require("express");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const cors = require("cors");
+const Stripe = require("stripe");
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const app = express();
 
 const port = process.env.PORT || 5000;
@@ -59,68 +61,106 @@ async function run() {
     res.send(result)
     })
     
-
 app.post("/Bookings", async (req, res) => {
   try {
     const { sessionId } = req.body;
 
     if (!sessionId) {
-      return res.status(400).send({ error: "SessionId missing in request body" });
+      return res.status(400).send({ error: "SessionId missing" });
     }
 
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
-    if (!session) {
-      return res.status(404).send({ error: "Session not found on Stripe" });
-    }
+    console.log("SESSION:", session);
+
     const bookingPropertyhouse = {
-      propertyId:    session.metadata?.propertyId || "N/A",
-      propertyTitle: session.metadata?.propertyName || "N/A",
-      tenantEmail:   session.metadata?.userEmail || session.customer_details?.email,
-      moveInDate:    session.metadata?.moveInDate || null,
-      phone:         session.metadata?.phone || "N/A",
-      notes:         session.metadata?.notes || "",
-      bookingAmount: session.amount_total ? session.amount_total / 100 : 0,
+      propertyId: session.metadata?.propertyId,
+      propertyTitle: session.metadata?.propertyName,
+      tenantEmail: session.metadata?.userEmail || session.customer_details?.email,
+      moveInDate: session.metadata?.moveInDate,
+      phone: session.metadata?.phone,
+      notes: session.metadata?.notes || "",
+      bookingAmount: session.amount_total / 100,
       transactionId: session.id,
-      paymentStatus: session.payment_status === "paid" ? "Paid" : "Pending",
-      bookingStatus: "Confirmed", 
-      createdAt:     new Date(),
+      paymentStatus: session.payment_status,
+      bookingStatus: "Confirmed",
+      createdAt: new Date(),
     };
 
     const result = await bookingProperty.insertOne(bookingPropertyhouse);
 
-    res.status(201).send({
+    console.log("INSERT RESULT:", result);
+
+    return res.status(201).send({
       success: true,
       insertedId: result.insertedId,
     });
 
   } catch (error) {
-    console.error("Booking error in backend:", error);
+    console.error("Booking error:", error);
     res.status(500).send({ error: error.message });
   }
 });
 
+
+app.get("/Bookings/:session_id", async (req, res) => {
+  try {
+    const {session_id} = req.params;
+
+    const booking = await bookingProperty.findOne({
+     session_id
+    });
+
+    if (!booking) {
+      return res.send({ exists: false });
+    }
+
+    return res.send({ exists: true, booking });
+
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+});
+
+
+
+
+
+
+
 // property favourite korle oita dkhaar jnnno
 
-app.post("/favorites/:userId",async(req,res)=>{
-  const {userId} = req.params
-  const {title,name,propertyId} = req.body;
-  const find = await favoriteProperty.insertOne({
-        userId: new ObjectId(userId),
-      propertyId: new ObjectId(propertyId),
+app.post("/favorites/:userId", async (req, res) => {
+  try {
+    const { userId, title, name } = req.body;
+
+    const newFavorite = {
+      userId: new ObjectId(userId),
       title,
       name,
-      description,
-      createdAt: new Date(),
+      createdAt: new Date()
+    };
 
-  })
-  res.json(find)
-})
+    const result = await favoriteProperty.insertOne(newFavorite);
+    
+    res.status(201).send({ success: true, insertedId: result.insertedId });
+  } catch (error) {
+    res.status(500).send({ error: "Failed to add to favorites" });
+  }
+});
 
-app.get("/favorites",async(req,res)=>{
-  const result = await favoriteProperty.find().toArray();
-  res.json(result)
-})
+
+
+app.get("/favorites/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+  
+    const result = await favoriteProperty.find({ userId: new ObjectId(userId) }).toArray();
+    res.send(result);
+  } catch (error) {
+    res.status(500).send({ error: "Failed to fetch favorites" });
+  }
+});
 
 
 // favourite data delete mane non-favour;
