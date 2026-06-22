@@ -231,7 +231,7 @@ app.patch("/user/:id", async (req, res) => {
   const { id } = req.params;
   const { role } = req.body;
 
-  const result = await usersCollection.updateOne(
+  const result = await usercollection.updateOne(
     { _id: new ObjectId(id) },
     { $set: { role } }
   );
