@@ -35,6 +35,7 @@ async function run() {
     const collection = db.collection("addProperties");
     const bookingProperty = db.collection("bookingHouse");
     const favoriteProperty = db.collection("favourite");
+    
 
     // ---------- Properties ----------
 
@@ -238,6 +239,21 @@ app.patch("/user/:id", async (req, res) => {
 
   res.send(result);
 });
+
+// admin accpet reject krobe homes;
+
+app.patch("/allhome/:id", async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  const result = await collection.updateOne(
+    { _id: new ObjectId(id) },
+    { $set: { status } }
+  );
+
+  res.send(result);
+});
+
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
