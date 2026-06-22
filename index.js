@@ -31,6 +31,7 @@ async function run() {
     await client.connect();
 
     const db = client.db("HouseRent");
+    const usercollection = db.collection("user")
     const collection = db.collection("addProperties");
     const bookingProperty = db.collection("bookingHouse");
     const favoriteProperty = db.collection("favourite");
@@ -190,6 +191,7 @@ async function run() {
       res.send(result)
     })
 
+    
 app.delete("/favorites/:id", async (req, res) => {
   const { id } = req.params;
 
@@ -198,6 +200,43 @@ app.delete("/favorites/:id", async (req, res) => {
   });
 
   res.json(result);
+});
+
+
+
+// owner booking update / reject korbe;
+app.patch("/Bookings/:id", async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  const result = await bookingProperty.updateOne(
+    { _id: new ObjectId(id) },
+    { $set: { status } }
+  );
+
+  res.json(result);
+});
+
+// shb user k paoaur jnno jara login korse
+
+app.get("/user",async(req,res)=>{
+  const result = await usercollection.find().toArray();
+  res.send(result)
+})
+
+
+//  user role update by admin
+
+app.patch("/user/:id", async (req, res) => {
+  const { id } = req.params;
+  const { role } = req.body;
+
+  const result = await usersCollection.updateOne(
+    { _id: new ObjectId(id) },
+    { $set: { role } }
+  );
+
+  res.send(result);
 });
 
     await client.db("admin").command({ ping: 1 });
