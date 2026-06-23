@@ -254,6 +254,38 @@ app.patch("/allhome/:id", async (req, res) => {
   res.send(result);
 });
 
+// update  by admin
+app.patch("/allhome/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    const result = await collection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: updateData }
+    );
+
+    res.send(result);
+  } catch (error) {
+    res.status(500).send({ error: "Update failed" });
+  }
+});
+
+// delte by admin
+app.delete("/allhome/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await collection.deleteOne({
+      _id: new ObjectId(id),
+    });
+
+    res.send(result);
+  } catch (error) {
+    res.status(500).send({ error: "Delete failed" });
+  }
+});
+
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
