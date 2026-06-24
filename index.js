@@ -31,68 +31,143 @@ async function run() {
     await client.connect();
 
     const db = client.db("HouseRent");
-    const usercollection = db.collection("user")
+    const usercollection = db.collection("user");
     const collection = db.collection("addProperties");
     const bookingProperty = db.collection("bookingHouse");
     const favoriteProperty = db.collection("favourite");
-    
+    const reviewSystem = db.collection("reviews");
+    const feedbackCollection = db.collection("rejectionFeedbacks"); // রিজেকশনের কারণ রাখার জন্য নতুন কালেকশন
 
-    // ---------- Properties ----------
+    // ---------- Reviews ----------
+//     app.post("/reviews", async (req, res) => {
+//       const body = req.body;
+//       const result = await reviewSystem.insertOne(body);
+//       res.send(result);
+//     });
 
-    app.get("/allhome", async (req, res) => {
-      const result = await collection.find().toArray();
-      res.send(result);
-    });
+//     app.get("/reviews", async (req, res) => {
+//       const result = await reviewSystem.find().toArray();
+//       res.send(result);
+//     });
 
-    app.post("/allhome", async (req, res) => {
-      const body = req.body;
-      const result = await collection.insertOne(body);
-      res.send(result);
-    });
+//     // ---------- Properties & Admin Actions ----------
 
-    app.get("/allhome/:id", async (req, res) => {
-      const { id } = req.params;
-      const result = await collection.findOne({
-        _id: new ObjectId(id)
-      });
-      res.send(result);
-    });
+//     // ১. হোমে ফিল্টার করা ডেটা পাওয়ার জন্য
+//     app.get("/allhome/filter", async (req, res) => {
+//       try {
+//         const { location, type, minPrice, maxPrice } = req.query;
+//         const filter = { status: "accepted" };
 
-    app.delete("/allhome/:id", async (req, res) => {
-      try {
-        const { id } = req.params;
-        const result = await collection.deleteOne({
-          _id: new ObjectId(id),
-        });
-        res.send(result);
-      } catch (error) {
-        res.status(500).send({ error: "Delete failed" });
-      }
-    });
+//         if (location) {
+//           filter.location = { $regex: location, $options: "i" };
+//         }
+//         if (type && type !== "Any Type") {
+//           filter.type = type;
+//         }
+//         if (minPrice || maxPrice) {
+//           filter.price = {
+//             ...(minPrice && { $gte: Number(minPrice) }),
+//             ...(maxPrice && { $lte: Number(maxPrice) }),
+//           };
+//         }
 
-    app.patch("/allhome/:id", async (req, res) => {
-      try {
-        const { id } = req.params;
-        const updateData = req.body;
-        const result = await collection.updateOne(
-          { _id: new ObjectId(id) },
-          { $set: updateData }
-        );
-        res.send(result);
-      } catch (error) {
-        res.status(500).send({ error: "Update failed" });
-      }
-    });
+//         const homes = await collection.find(filter).toArray();
+//         res.json(homes);
+//       } catch (error) {
+//         res.status(500).json({ message: "Server error" });
+//       }
+//     });
 
+//     app.get("/allhome", async (req, res) => {
+//       const result = await collection.find().toArray();
+//       res.send(result);
+//     });
+
+//     app.post("/allhome", async (req, res) => {
+//       const body = req.body;
+//       const result = await collection.insertOne(body);
+//       res.send(result);
+//     });
+
+//     app.get("/allhome/:id", async (req, res) => {
+//       try {
+//         const { id } = req.params;
+//         const result = await collection.findOne({ _id: new ObjectId(id) });
+//         res.send(result);
+//       } catch (error) {
+//         res.status(500).send({ error: "Fetch failed" });
+//       }
+//     });
+
+//     app.delete("/allhome/:id", async (req, res) => {
+//       try {
+//         const { id } = req.params;
+//         const result = await collection.deleteOne({ _id: new ObjectId(id) });
+//         res.send(result);
+//       } catch (error) {
+//         res.status(500).send({ error: "Delete failed" });
+//       }
+//     });
+
+//     app.patch("/allhome/:id", async (req, res) => {
+//       try {
+//         const { id } = req.params;
+//         const updateData = req.body; // ফ্রন্টএন্ড থেকে যা পাঠানো হবে তাই আপডেট হবে
+
+//         const result = await collection.updateOne(
+//           { _id: new ObjectId(id) },
+//           { $set: updateData }
+//         );
+//         res.send(result);
+//       } catch (error) {
+//         res.status(500).send({ error: "Update failed" });
+//       }
+//     });
+// //  reejact feddback show
+
+//    app.post("/reject-feedback/:id", async (req, res) => {
+//   try {
+//     const { id } = req.params;
+
+//     const feedbackData = {
+//       homeId: new ObjectId(id),
+//       feedback: req.body.feedback,
+//       status: "rejected",
+//       createdAt: new Date(),
+//     };
+
+//     const result = await feedbackCollection.insertOne(feedbackData);
+
+//     res.status(201).send(result);
+//   } catch (error) {
+//     res.status(500).send({ error: "Failed to save feedback" });
+//   }
+// });
+
+
+// app.get("/reject-feedback", async (req, res) => {
+//   try {
+//     const result = await feedbackCollection.find().toArray();
+//     res.send(result);
+//   } catch (error) {
+//     res.status(500).send({ error: "Failed to get feedback" });
+//   }
+// });
+
+
+
+// app.get("/reject-feedback/:id", async (req, res) => {
+//   const {id} = req.params
+//   const result = await feedbackCollection.findOne({
+//     homeId : new ObjectId(id)
+//   })
+//   res.send(result);
+// });
     // ---------- Bookings ----------
-
     app.post("/Bookings", async (req, res) => {
       try {
         const { sessionId } = req.body;
-
-        if (!sessionId) {
-          return res.status(400).send({ error: "SessionId missing" });
-        }
+        if (!sessionId) return res.status(400).send({ error: "SessionId missing" });
 
         const session = await stripe.checkout.sessions.retrieve(sessionId);
 
@@ -111,14 +186,8 @@ async function run() {
         };
 
         const result = await bookingProperty.insertOne(bookingPropertyhouse);
-
-        return res.status(201).send({
-          success: true,
-          insertedId: result.insertedId,
-        });
-
+        return res.status(201).send({ success: true, insertedId: result.insertedId });
       } catch (error) {
-        console.error("Booking error:", error);
         res.status(500).send({ error: error.message });
       }
     });
@@ -126,40 +195,39 @@ async function run() {
     app.get("/Bookings/:session_id", async (req, res) => {
       try {
         const { session_id } = req.params;
-
-        const booking = await bookingProperty.findOne({
-          transactionId: session_id
-        });
-
-        if (!booking) {
-          return res.send({ exists: false });
-        }
-
+        const booking = await bookingProperty.findOne({ transactionId: session_id });
+        if (!booking) return res.send({ exists: false });
         return res.send({ exists: true, booking });
-
       } catch (error) {
         res.status(500).send({ error: error.message });
       }
     });
 
-    app.get("/Bookings",async(req,res)=>{
+    app.get("/Bookings", async (req, res) => {
       const result = await bookingProperty.find().toArray();
-      res.send(result)
-    })
+      res.send(result);
+    });
+
+    app.patch("/Bookings/:id", async (req, res) => {
+      const { id } = req.params;
+      const { status } = req.body;
+      const result = await bookingProperty.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { status } }
+      );
+      res.json(result);
+    });
 
     // ---------- Favorites ----------
-
     app.post("/favorites/:userId", async (req, res) => {
       try {
         const { userId, title, name } = req.body;
-
         const newFavorite = {
           userId: new ObjectId(userId),
           title,
           name,
           createdAt: new Date()
         };
-
         const result = await favoriteProperty.insertOne(newFavorite);
         res.status(201).send({ success: true, insertedId: result.insertedId });
       } catch (error) {
@@ -170,127 +238,81 @@ async function run() {
     app.get("/favorites/:userId", async (req, res) => {
       try {
         const { userId } = req.params;
+        if (!userId) return res.status(400).json({ error: "userId is required" });
 
-        if (!userId) {
-          return res.status(400).json({ error: "userId is required" });
-        }
-
-        const result = await favoriteProperty
-          .find({ userId: new ObjectId(userId) })
-          .toArray();
-
+        const result = await favoriteProperty.find({ userId: new ObjectId(userId) }).toArray();
         res.send(result);
       } catch (error) {
-        console.error(error.message);
         res.status(500).send({ error: "Failed to fetch favorites" });
       }
     });
 
-
-    app.get("/favorites",async(req,res)=>{
+    app.get("/favorites", async (req, res) => {
       const result = await favoriteProperty.find().toArray();
-      res.send(result)
-    })
-
-    
-app.delete("/favorites/:id", async (req, res) => {
-  const { id } = req.params;
-
-  const result = await favoriteProperty.deleteOne({
-    _id: new ObjectId(id),
-  });
-
-  res.json(result);
-});
-
-
-
-// owner booking update / reject korbe;
-app.patch("/Bookings/:id", async (req, res) => {
-  const { id } = req.params;
-  const { status } = req.body;
-
-  const result = await bookingProperty.updateOne(
-    { _id: new ObjectId(id) },
-    { $set: { status } }
-  );
-
-  res.json(result);
-});
-
-// shb user k paoaur jnno jara login korse
-
-app.get("/user",async(req,res)=>{
-  const result = await usercollection.find().toArray();
-  res.send(result)
-})
-
-
-//  user role update by admin
-
-app.patch("/user/:id", async (req, res) => {
-  const { id } = req.params;
-  const { role } = req.body;
-
-  const result = await usercollection.updateOne(
-    { _id: new ObjectId(id) },
-    { $set: { role } }
-  );
-
-  res.send(result);
-});
-
-// admin accpet reject krobe homes;
-
-app.patch("/allhome/:id", async (req, res) => {
-  const { id } = req.params;
-  const { status } = req.body;
-
-  const result = await collection.updateOne(
-    { _id: new ObjectId(id) },
-    { $set: { status } }
-  );
-
-  res.send(result);
-});
-
-// update  by admin
-app.patch("/allhome/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updateData = req.body;
-
-    const result = await collection.updateOne(
-      { _id: new ObjectId(id) },
-      { $set: updateData }
-    );
-
-    res.send(result);
-  } catch (error) {
-    res.status(500).send({ error: "Update failed" });
-  }
-});
-
-// delte by admin
-app.delete("/allhome/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const result = await collection.deleteOne({
-      _id: new ObjectId(id),
+      res.send(result);
     });
 
+    app.delete("/favorites/:id", async (req, res) => {
+      const { id } = req.params;
+      const result = await favoriteProperty.deleteOne({ _id: new ObjectId(id) });
+      res.json(result);
+    });
+
+    // ---------- Users ----------
+    app.get("/user", async (req, res) => {
+      const result = await usercollection.find().toArray();
+      res.send(result);
+    });
+
+    app.patch("/user/:id", async (req, res) => {
+      const { id } = req.params;
+      const { role } = req.body;
+      const result = await usercollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { role } }
+      );
+      res.send(result);
+    });
+
+    // filter btn allhome ar jnno 
+app.get("/allhome", async (req, res) => {
+  try {
+    const { location, propertyType, sort } = req.query;
+
+    let query = {};
+
+    if (location) {
+      query.location = {
+        $regex: location,
+        $options: "i",
+      };
+    }
+
+    if (propertyType) {
+      query.propertyType = propertyType;
+    }
+
+    let result = await collection.find(query).toArray();
+
+    if (sort === "low") {
+      result.sort((a, b) => Number(a.price) - Number(b.price));
+    } else if (sort === "high") {
+      result.sort((a, b) => Number(b.price) - Number(a.price));
+    }
+
     res.send(result);
   } catch (error) {
-    res.status(500).send({ error: "Delete failed" });
+    res.status(500).send({
+      message: "Failed to fetch properties",
+      error: error.message,
+    });
   }
 });
 
-
-    await client.db("admin").command({ ping: 1 });
+await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
-    // client.close() ইচ্ছাকৃতভাবে call করা হয়নি, যাতে connection খোলা থাকে
+  
   }
 }
 run().catch(console.dir);
