@@ -207,15 +207,13 @@ app.get("/reject-feedback", async (req, res) => {
   }
 });
 
-
-
-app.get("/reject-feedback/:id", async (req, res) => {
-  const {id} = req.params
-  const result = await feedbackCollection.findOne({
-    homeId : new ObjectId(id)
-  })
-  res.send(result);
-});
+// app.get("/reject-feedback/:id", async (req, res) => {
+//   const {id} = req.params
+//   const result = await feedbackCollection.findOne({
+//     homeId : new ObjectId(id)
+//   })
+//   res.send(result);
+// });
     // ---------- Bookings ----------
     app.post("/Bookings", async (req, res) => {
       try {
