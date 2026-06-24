@@ -50,6 +50,74 @@ async function run() {
       res.send(result);
     });
 
+    // pagination for booking apage;
+
+   app.get("/Bookings", async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 3;
+
+    const skip = (page - 1) * limit;
+
+    const data = await collection
+      .find()
+      .skip(skip)
+      .limit(limit)
+      .toArray();
+
+    const total = await bookingProperty.countDocuments();
+
+    res.send({
+      data,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    });
+
+  } catch (error) {
+    res.status(500).send({ message: "Server Error", error });
+  }
+});
+
+// allhome a pagination
+app.get("/allhome", async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 3;
+
+    const skip = (page - 1) * limit;
+
+    const data = await collection
+      .find()
+      .skip(skip)
+      .limit(limit)
+      .toArray();
+
+    const total = await collection.countDocuments();
+
+    res.send({
+      data,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    });
+
+  } catch (error) {
+    res.status(500).send({ message: "Server Error", error });
+  }
+});
+
+    
+
+
+
+
+
+
+
+
+
+
     // ---------- Properties & Admin Actions ----------
 
     // ১. হোমে ফিল্টার করা ডেটা পাওয়ার জন্য
