@@ -39,130 +39,130 @@ async function run() {
     const feedbackCollection = db.collection("rejectionFeedbacks"); // রিজেকশনের কারণ রাখার জন্য নতুন কালেকশন
 
     // ---------- Reviews ----------
-//     app.post("/reviews", async (req, res) => {
-//       const body = req.body;
-//       const result = await reviewSystem.insertOne(body);
-//       res.send(result);
-//     });
+    app.post("/reviews", async (req, res) => {
+      const body = req.body;
+      const result = await reviewSystem.insertOne(body);
+      res.send(result);
+    });
 
-//     app.get("/reviews", async (req, res) => {
-//       const result = await reviewSystem.find().toArray();
-//       res.send(result);
-//     });
+    app.get("/reviews", async (req, res) => {
+      const result = await reviewSystem.find().toArray();
+      res.send(result);
+    });
 
-//     // ---------- Properties & Admin Actions ----------
+    // ---------- Properties & Admin Actions ----------
 
-//     // ১. হোমে ফিল্টার করা ডেটা পাওয়ার জন্য
-//     app.get("/allhome/filter", async (req, res) => {
-//       try {
-//         const { location, type, minPrice, maxPrice } = req.query;
-//         const filter = { status: "accepted" };
+    // ১. হোমে ফিল্টার করা ডেটা পাওয়ার জন্য
+    app.get("/allhome/filter", async (req, res) => {
+      try {
+        const { location, type, minPrice, maxPrice } = req.query;
+        const filter = { status: "accepted" };
 
-//         if (location) {
-//           filter.location = { $regex: location, $options: "i" };
-//         }
-//         if (type && type !== "Any Type") {
-//           filter.type = type;
-//         }
-//         if (minPrice || maxPrice) {
-//           filter.price = {
-//             ...(minPrice && { $gte: Number(minPrice) }),
-//             ...(maxPrice && { $lte: Number(maxPrice) }),
-//           };
-//         }
+        if (location) {
+          filter.location = { $regex: location, $options: "i" };
+        }
+        if (type && type !== "Any Type") {
+          filter.type = type;
+        }
+        if (minPrice || maxPrice) {
+          filter.price = {
+            ...(minPrice && { $gte: Number(minPrice) }),
+            ...(maxPrice && { $lte: Number(maxPrice) }),
+          };
+        }
 
-//         const homes = await collection.find(filter).toArray();
-//         res.json(homes);
-//       } catch (error) {
-//         res.status(500).json({ message: "Server error" });
-//       }
-//     });
+        const homes = await collection.find(filter).toArray();
+        res.json(homes);
+      } catch (error) {
+        res.status(500).json({ message: "Server error" });
+      }
+    });
 
-//     app.get("/allhome", async (req, res) => {
-//       const result = await collection.find().toArray();
-//       res.send(result);
-//     });
+    app.get("/allhome", async (req, res) => {
+      const result = await collection.find().toArray();
+      res.send(result);
+    });
 
-//     app.post("/allhome", async (req, res) => {
-//       const body = req.body;
-//       const result = await collection.insertOne(body);
-//       res.send(result);
-//     });
+    app.post("/allhome", async (req, res) => {
+      const body = req.body;
+      const result = await collection.insertOne(body);
+      res.send(result);
+    });
 
-//     app.get("/allhome/:id", async (req, res) => {
-//       try {
-//         const { id } = req.params;
-//         const result = await collection.findOne({ _id: new ObjectId(id) });
-//         res.send(result);
-//       } catch (error) {
-//         res.status(500).send({ error: "Fetch failed" });
-//       }
-//     });
+    app.get("/allhome/:id", async (req, res) => {
+      try {
+        const { id } = req.params;
+        const result = await collection.findOne({ _id: new ObjectId(id) });
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ error: "Fetch failed" });
+      }
+    });
 
-//     app.delete("/allhome/:id", async (req, res) => {
-//       try {
-//         const { id } = req.params;
-//         const result = await collection.deleteOne({ _id: new ObjectId(id) });
-//         res.send(result);
-//       } catch (error) {
-//         res.status(500).send({ error: "Delete failed" });
-//       }
-//     });
+    app.delete("/allhome/:id", async (req, res) => {
+      try {
+        const { id } = req.params;
+        const result = await collection.deleteOne({ _id: new ObjectId(id) });
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ error: "Delete failed" });
+      }
+    });
 
-//     app.patch("/allhome/:id", async (req, res) => {
-//       try {
-//         const { id } = req.params;
-//         const updateData = req.body; // ফ্রন্টএন্ড থেকে যা পাঠানো হবে তাই আপডেট হবে
+    app.patch("/allhome/:id", async (req, res) => {
+      try {
+        const { id } = req.params;
+        const updateData = req.body; // ফ্রন্টএন্ড থেকে যা পাঠানো হবে তাই আপডেট হবে
 
-//         const result = await collection.updateOne(
-//           { _id: new ObjectId(id) },
-//           { $set: updateData }
-//         );
-//         res.send(result);
-//       } catch (error) {
-//         res.status(500).send({ error: "Update failed" });
-//       }
-//     });
-// //  reejact feddback show
+        const result = await collection.updateOne(
+          { _id: new ObjectId(id) },
+          { $set: updateData }
+        );
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ error: "Update failed" });
+      }
+    });
+//  reejact feddback show
 
-//    app.post("/reject-feedback/:id", async (req, res) => {
-//   try {
-//     const { id } = req.params;
+   app.post("/reject-feedback/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
 
-//     const feedbackData = {
-//       homeId: new ObjectId(id),
-//       feedback: req.body.feedback,
-//       status: "rejected",
-//       createdAt: new Date(),
-//     };
+    const feedbackData = {
+      homeId: new ObjectId(id),
+      feedback: req.body.feedback,
+      status: "rejected",
+      createdAt: new Date(),
+    };
 
-//     const result = await feedbackCollection.insertOne(feedbackData);
+    const result = await feedbackCollection.insertOne(feedbackData);
 
-//     res.status(201).send(result);
-//   } catch (error) {
-//     res.status(500).send({ error: "Failed to save feedback" });
-//   }
-// });
-
-
-// app.get("/reject-feedback", async (req, res) => {
-//   try {
-//     const result = await feedbackCollection.find().toArray();
-//     res.send(result);
-//   } catch (error) {
-//     res.status(500).send({ error: "Failed to get feedback" });
-//   }
-// });
+    res.status(201).send(result);
+  } catch (error) {
+    res.status(500).send({ error: "Failed to save feedback" });
+  }
+});
 
 
+app.get("/reject-feedback", async (req, res) => {
+  try {
+    const result = await feedbackCollection.find().toArray();
+    res.send(result);
+  } catch (error) {
+    res.status(500).send({ error: "Failed to get feedback" });
+  }
+});
 
-// app.get("/reject-feedback/:id", async (req, res) => {
-//   const {id} = req.params
-//   const result = await feedbackCollection.findOne({
-//     homeId : new ObjectId(id)
-//   })
-//   res.send(result);
-// });
+
+
+app.get("/reject-feedback/:id", async (req, res) => {
+  const {id} = req.params
+  const result = await feedbackCollection.findOne({
+    homeId : new ObjectId(id)
+  })
+  res.send(result);
+});
     // ---------- Bookings ----------
     app.post("/Bookings", async (req, res) => {
       try {
