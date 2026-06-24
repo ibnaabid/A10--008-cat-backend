@@ -51,21 +51,20 @@ async function run() {
     });
 
     // pagination for booking apage;
-
-   app.get("/Bookings", async (req, res) => {
+app.get("/Bookings", async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 3;
 
     const skip = (page - 1) * limit;
 
-    const data = await collection
+    const total = await bookingProperty.countDocuments();
+
+    const data = await bookingProperty
       .find()
       .skip(skip)
       .limit(limit)
       .toArray();
-
-    const total = await bookingProperty.countDocuments();
 
     res.send({
       data,
@@ -73,11 +72,15 @@ async function run() {
       page,
       totalPages: Math.ceil(total / limit),
     });
-
   } catch (error) {
-    res.status(500).send({ message: "Server Error", error });
+    res.status(500).send({
+      message: "Server Error",
+      error: error.message,
+    });
   }
 });
+
+
 
 // allhome a pagination
 app.get("/allhome", async (req, res) => {
@@ -87,13 +90,37 @@ app.get("/allhome", async (req, res) => {
 
     const skip = (page - 1) * limit;
 
-    const data = await collection
-      .find()
+    const { location, propertyType, sort } = req.query;
+
+    let query = {};
+
+    if (location) {
+      query.location = {
+        $regex: location,
+        $options: "i",
+      };
+    }
+
+    if (propertyType) {
+      query.propertyType = propertyType;
+    }
+
+    let cursor = collection.find(query);
+
+    if (sort === "low") {
+      cursor = cursor.sort({ price: 1 });
+    }
+
+    if (sort === "high") {
+      cursor = cursor.sort({ price: -1 });
+    }
+
+    const total = await collection.countDocuments(query);
+
+    const data = await cursor
       .skip(skip)
       .limit(limit)
       .toArray();
-
-    const total = await collection.countDocuments();
 
     res.send({
       data,
@@ -101,55 +128,13 @@ app.get("/allhome", async (req, res) => {
       page,
       totalPages: Math.ceil(total / limit),
     });
-
   } catch (error) {
-    res.status(500).send({ message: "Server Error", error });
+    res.status(500).send({
+      message: "Failed to fetch properties",
+      error: error.message,
+    });
   }
 });
-
-    
-
-
-
-
-
-
-
-
-
-
-    // ---------- Properties & Admin Actions ----------
-
-    // ১. হোমে ফিল্টার করা ডেটা পাওয়ার জন্য
-    app.get("/allhome/filter", async (req, res) => {
-      try {
-        const { location, type, minPrice, maxPrice } = req.query;
-        const filter = { status: "accepted" };
-
-        if (location) {
-          filter.location = { $regex: location, $options: "i" };
-        }
-        if (type && type !== "Any Type") {
-          filter.type = type;
-        }
-        if (minPrice || maxPrice) {
-          filter.price = {
-            ...(minPrice && { $gte: Number(minPrice) }),
-            ...(maxPrice && { $lte: Number(maxPrice) }),
-          };
-        }
-
-        const homes = await collection.find(filter).toArray();
-        res.json(homes);
-      } catch (error) {
-        res.status(500).json({ message: "Server error" });
-      }
-    });
-
-    app.get("/allhome", async (req, res) => {
-      const result = await collection.find().toArray();
-      res.send(result);
-    });
 
     app.post("/allhome", async (req, res) => {
       const body = req.body;
@@ -271,10 +256,6 @@ app.get("/reject-feedback/:id", async (req, res) => {
       }
     });
 
-    app.get("/Bookings", async (req, res) => {
-      const result = await bookingProperty.find().toArray();
-      res.send(result);
-    });
 
     app.patch("/Bookings/:id", async (req, res) => {
       const { id } = req.params;
