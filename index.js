@@ -86,6 +86,7 @@ const ownerVerify = async (req, res, next) => {
       });
     }
     const token = auth.split(" ")[1];
+    console.log(token)
     
   
 
@@ -95,7 +96,7 @@ const ownerVerify = async (req, res, next) => {
 
 
     // role check
-    if (payload.role !== "owner" & payload.role !== "admin") {
+    if (payload.role !== "owner" && payload.role !== "admin") {
       return res.status(403).send({
         message: "owner & admin Access Only",
       });
@@ -212,7 +213,7 @@ app.get("/Bookings",tenantVerify, async (req, res) => {
 
 
 // allhome a pagination
-app.get("/allhome",ownerVerify, async (req, res) => {
+app.get("/allhome",tenantVerify, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 3;
@@ -309,7 +310,7 @@ app.get("/allhome",ownerVerify, async (req, res) => {
     
 //  reejact feddback show
 
-   app.post("/reject-feedback/:id", async (req, res) => {
+   app.post("/reject-feedback/:id",adminVerify, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -329,7 +330,7 @@ app.get("/allhome",ownerVerify, async (req, res) => {
 });
 
 
-app.get("/reject-feedback", async (req, res) => {
+app.get("/reject-feedback",ownerVerify, async (req, res) => {
   try {
     const result = await feedbackCollection.find().toArray();
     res.send(result);
@@ -339,13 +340,15 @@ app.get("/reject-feedback", async (req, res) => {
   }
 });
 
-app.get("/reject-feedback/:id", async (req, res) => {
+app.get("/reject-feedback/:id",ownerVerify, async (req, res) => {
   const {id} = req.params
   const result = await feedbackCollection.findOne({
     homeId : new ObjectId(id)
   })
   res.send(result);
 });
+
+
     // ---------- Bookings ----------
     app.post("/Bookings", async (req, res) => {
       try {
