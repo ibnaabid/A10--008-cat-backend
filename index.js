@@ -65,7 +65,7 @@ const tenantVerify = async (req, res, next) => {
   
 
     const { payload } = await jose.jwtVerify(token, jwks);
-    console.log("payload",payload)
+    // console.log("payload",payload)
 
 
 
@@ -135,6 +135,9 @@ app.get("/Bookings",tenantVerify, async (req, res) => {
       total,
       page,
       totalPages: Math.ceil(total / limit),
+      message:
+        "API PROTECTED"
+      
     });
   } catch (error) {
     res.status(500).send({
