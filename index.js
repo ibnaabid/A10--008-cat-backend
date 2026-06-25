@@ -185,7 +185,7 @@ app.get("/allhome", async (req, res) => {
     const feedbackData = {
       homeId: new ObjectId(id),
       feedback: req.body.feedback,
-      status: "rejected",
+      status: "Rejected",
       createdAt: new Date(),
     };
 
@@ -202,18 +202,19 @@ app.get("/reject-feedback", async (req, res) => {
   try {
     const result = await feedbackCollection.find().toArray();
     res.send(result);
+    console.log(result)
   } catch (error) {
     res.status(500).send({ error: "Failed to get feedback" });
   }
 });
 
-// app.get("/reject-feedback/:id", async (req, res) => {
-//   const {id} = req.params
-//   const result = await feedbackCollection.findOne({
-//     homeId : new ObjectId(id)
-//   })
-//   res.send(result);
-// });
+app.get("/reject-feedback/:id", async (req, res) => {
+  const {id} = req.params
+  const result = await feedbackCollection.findOne({
+    homeId : new ObjectId(id)
+  })
+  res.send(result);
+});
     // ---------- Bookings ----------
     app.post("/Bookings", async (req, res) => {
       try {
