@@ -69,12 +69,7 @@ const tenantVerify = async (req, res, next) => {
 
 
 
-    // role check
-    if (payload.role !== "tenant") {
-      return res.status(403).send({
-        message: "Tenant Access Only",
-      });
-    }
+
 
     next();
   } catch (error) {
@@ -241,7 +236,7 @@ app.get("/allhome",ownerVerify, async (req, res) => {
   }
 });
 
-    app.post("/allhome", async (req, res) => {
+    app.post("/allhome",ownerVerify, async (req, res) => {
       const body = req.body;
       const result = await collection.insertOne(body);
       res.send(result);
@@ -351,7 +346,7 @@ app.get("/reject-feedback/:id", async (req, res) => {
       }
     });
 
-    app.get("/Bookings/:session_id", async (req, res) => {
+    app.get("/Bookings/:session_id",ownerVerify, async (req, res) => {
       try {
         const { session_id } = req.params;
         const booking = await bookingProperty.findOne({ transactionId: session_id });
@@ -363,7 +358,7 @@ app.get("/reject-feedback/:id", async (req, res) => {
     });
 
 
-    app.patch("/Bookings/:id", async (req, res) => {
+    app.patch("/Bookings/:id",ownerVerify, async (req, res) => {
       const { id } = req.params;
       const { status } = req.body;
       const result = await bookingProperty.updateOne(
