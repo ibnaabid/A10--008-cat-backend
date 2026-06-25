@@ -84,6 +84,44 @@ const tenantVerify = async (req, res, next) => {
   }
 };
 
+// admin ar jwt protector
+
+const ownerVerify = async (req, res, next) => {
+  try {
+    const auth = req.headers.authorization;
+
+
+    if (!auth || !auth.startsWith("Bearer ")) {
+      return res.status(401).send({
+        message: "Unauthorized",
+      });
+    }
+    const token = auth.split(" ")[1];
+    
+  console.log("token",token)
+  
+
+    const { payload } = await jose.jwtVerify(token, jwks);
+    console.log("payload",payload)
+
+
+
+    // role check
+    if (payload.role !== "owner") {
+      return res.status(403).send({
+        message: "owner Access Only",
+      });
+    }
+
+    next();
+  } catch (error) {
+    return res.status(401).send({
+      message: "Invalid Token",
+    });
+  }
+};
+
+
 
 
 
@@ -150,7 +188,7 @@ app.get("/Bookings",tenantVerify, async (req, res) => {
 
 
 // allhome a pagination
-app.get("/allhome", async (req, res) => {
+app.get("/allhome",ownerVerify, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 3;
@@ -219,7 +257,7 @@ app.get("/allhome", async (req, res) => {
       }
     });
 
-    app.delete("/allhome/:id", async (req, res) => {
+    app.delete("/allhome/:id",ownerVerify, async (req, res) => {
       try {
         const { id } = req.params;
         const result = await collection.deleteOne({ _id: new ObjectId(id) });
@@ -229,7 +267,7 @@ app.get("/allhome", async (req, res) => {
       }
     });
 
-    app.patch("/allhome/:id", async (req, res) => {
+    app.patch("/allhome/:id",ownerVerify, async (req, res) => {
       try {
         const { id } = req.params;
         const updateData = req.body; // ফ্রন্টএন্ড থেকে যা পাঠানো হবে তাই আপডেট হবে
@@ -243,6 +281,8 @@ app.get("/allhome", async (req, res) => {
         res.status(500).send({ error: "Update failed" });
       }
     });
+
+    
 //  reejact feddback show
 
    app.post("/reject-feedback/:id", async (req, res) => {
@@ -389,40 +429,40 @@ app.get("/reject-feedback/:id", async (req, res) => {
       res.send(result);
     });
 
-    // filter btn allhome ar jnno 
-app.get("/allhome", async (req, res) => {
-  try {
-    const { location, propertyType, sort } = req.query;
+//     // filter btn allhome ar jnno 
+// app.get("/allhome", async (req, res) => {
+//   try {
+//     const { location, propertyType, sort } = req.query;
 
-    let query = {};
+//     let query = {};
 
-    if (location) {
-      query.location = {
-        $regex: location,
-        $options: "i",
-      };
-    }
+//     if (location) {
+//       query.location = {
+//         $regex: location,
+//         $options: "i",
+//       };
+//     }
 
-    if (propertyType) {
-      query.propertyType = propertyType;
-    }
+//     if (propertyType) {
+//       query.propertyType = propertyType;
+//     }
 
-    let result = await collection.find(query).toArray();
+//     let result = await collection.find(query).toArray();
 
-    if (sort === "low") {
-      result.sort((a, b) => Number(a.price) - Number(b.price));
-    } else if (sort === "high") {
-      result.sort((a, b) => Number(b.price) - Number(a.price));
-    }
+//     if (sort === "low") {
+//       result.sort((a, b) => Number(a.price) - Number(b.price));
+//     } else if (sort === "high") {
+//       result.sort((a, b) => Number(b.price) - Number(a.price));
+//     }
 
-    res.send(result);
-  } catch (error) {
-    res.status(500).send({
-      message: "Failed to fetch properties",
-      error: error.message,
-    });
-  }
-});
+//     res.send(result);
+//   } catch (error) {
+//     res.status(500).send({
+//       message: "Failed to fetch properties",
+//       error: error.message,
+//     });
+//   }
+// });
 
 await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
