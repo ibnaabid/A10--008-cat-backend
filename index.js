@@ -8,6 +8,8 @@ const Stripe = require("stripe");
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const app = express();
 
+const jose = require('jose-cjs');
+
 const port = process.env.PORT || 5000;
 const uri = process.env.MONGODB_URI;
 
@@ -36,7 +38,69 @@ async function run() {
     const bookingProperty = db.collection("bookingHouse");
     const favoriteProperty = db.collection("favourite");
     const reviewSystem = db.collection("reviews");
-    const feedbackCollection = db.collection("rejectionFeedbacks"); // রিজেকশনের কারণ রাখার জন্য নতুন কালেকশন
+    const feedbackCollection = db.collection("rejectionFeedbacks"); 
+
+                      // jwt korar jnno useabale for tenat"///node_modules
+      
+
+const jwks = jose.createRemoteJWKSet (
+  new URL(
+    `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/api/auth/jwks`
+  )
+);
+``
+const tenantVerify = async (req, res, next) => {
+  try {
+    const auth = req.headers.authorization;
+
+
+    if (!auth || !auth.startsWith("Bearer ")) {
+      return res.status(401).send({
+        message: "Unauthorized",
+      });
+    }
+    const token = auth.split(" ")[1];
+    
+  // console.log("token",token.token)
+  
+
+    const { payload } = await jose.jwtVerify(token, jwks);
+    console.log("payload",payload)
+
+
+
+    // role check
+    if (payload.role !== "tenant") {
+      return res.status(403).send({
+        message: "Tenant Access Only",
+      });
+    }
+
+    next();
+  } catch (error) {
+    return res.status(401).send({
+      message: "Invalid Token",
+    });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // ---------- Reviews ----------
     app.post("/reviews", async (req, res) => {
@@ -51,7 +115,7 @@ async function run() {
     });
 
     // pagination for booking apage;
-app.get("/Bookings", async (req, res) => {
+app.get("/Bookings",tenantVerify, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 3;
