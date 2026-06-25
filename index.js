@@ -362,7 +362,7 @@ app.get("/reject-feedback/:id", async (req, res) => {
       }
     });
 
-    app.get("/favorites", async (req, res) => {
+    app.get("/favorites",tenantVerify, async (req, res) => {
       const result = await favoriteProperty.find().toArray();
       res.send(result);
     });
