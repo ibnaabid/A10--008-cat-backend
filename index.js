@@ -93,7 +93,6 @@ const ownerVerify = async (req, res, next) => {
     }
     const token = auth.split(" ")[1];
     
-  console.log("token",token)
   
 
     const { payload } = await jose.jwtVerify(token, jwks);
@@ -105,6 +104,42 @@ const ownerVerify = async (req, res, next) => {
     if (payload.role !== "owner") {
       return res.status(403).send({
         message: "owner Access Only",
+      });
+    }
+
+    next();
+  } catch (error) {
+    return res.status(401).send({
+      message: "Invalid Token",
+    });
+  }
+};
+
+
+const adminVerify = async (req, res, next) => {
+  try {
+    const auth = req.headers.authorization;
+
+
+    if (!auth || !auth.startsWith("Bearer ")) {
+      return res.status(401).send({
+        message: "Unauthorized",
+      });
+    }
+    const token = auth.split(" ")[1];
+    
+  console.log("token",token)
+  
+
+    const { payload } = await jose.jwtVerify(token, jwks);
+    console.log("payload",payload)
+
+
+
+    // role check
+    if (payload.role !== "admin") {
+      return res.status(403).send({
+        message: "admin Access Only",
       });
     }
 
@@ -409,12 +444,12 @@ app.get("/reject-feedback/:id", async (req, res) => {
     });
 
     // ---------- Users ----------
-    app.get("/user", async (req, res) => {
+    app.get("/user",adminVerify, async (req, res) => {
       const result = await usercollection.find().toArray();
       res.send(result);
     });
 
-    app.patch("/user/:id", async (req, res) => {
+    app.patch("/user/:id",adminVerify, async (req, res) => {
       const { id } = req.params;
       const { role } = req.body;
       const result = await usercollection.updateOne(
