@@ -60,16 +60,10 @@ const tenantVerify = async (req, res, next) => {
       });
     }
     const token = auth.split(" ")[1];
-    
-  // console.log("token",token.token)
+
   
 
     const { payload } = await jose.jwtVerify(token, jwks);
-    // console.log("payload",payload)
-
-
-
-
 
     next();
   } catch (error) {
@@ -79,7 +73,7 @@ const tenantVerify = async (req, res, next) => {
   }
 };
 
-// admin ar jwt protector
+// owner ar jwt protector
 
 const ownerVerify = async (req, res, next) => {
   try {
@@ -101,9 +95,9 @@ const ownerVerify = async (req, res, next) => {
 
 
     // role check
-    if (payload.role !== "owner") {
+    if (payload.role !== "owner" & payload.role !== "admin") {
       return res.status(403).send({
-        message: "owner Access Only",
+        message: "owner & admin Access Only",
       });
     }
 
@@ -437,7 +431,7 @@ app.get("/reject-feedback/:id", async (req, res) => {
       res.send(result);
     });
 
-    app.delete("/favorites/:id", async (req, res) => {
+    app.delete("/favorites/:id",tenantVerify, async (req, res) => {
       const { id } = req.params;
       const result = await favoriteProperty.deleteOne({ _id: new ObjectId(id) });
       res.json(result);
@@ -459,40 +453,6 @@ app.get("/reject-feedback/:id", async (req, res) => {
       res.send(result);
     });
 
-//     // filter btn allhome ar jnno 
-// app.get("/allhome", async (req, res) => {
-//   try {
-//     const { location, propertyType, sort } = req.query;
-
-//     let query = {};
-
-//     if (location) {
-//       query.location = {
-//         $regex: location,
-//         $options: "i",
-//       };
-//     }
-
-//     if (propertyType) {
-//       query.propertyType = propertyType;
-//     }
-
-//     let result = await collection.find(query).toArray();
-
-//     if (sort === "low") {
-//       result.sort((a, b) => Number(a.price) - Number(b.price));
-//     } else if (sort === "high") {
-//       result.sort((a, b) => Number(b.price) - Number(a.price));
-//     }
-
-//     res.send(result);
-//   } catch (error) {
-//     res.status(500).send({
-//       message: "Failed to fetch properties",
-//       error: error.message,
-//     });
-//   }
-// });
 
 await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
