@@ -48,11 +48,8 @@ client.connect(()=>{
       
 
 const jwks = jose.createRemoteJWKSet (
-  new URL(
-    `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/api/auth/jwks`
-  )
-);
-``
+  new URL(`${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/api/auth/jwks`));
+
 const tenantVerify = async (req, res, next) => {
   try {
     const auth = req.headers.authorization;
