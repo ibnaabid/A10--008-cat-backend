@@ -28,9 +28,13 @@ const client = new MongoClient(uri, {
   }
 });
 
-async function run() {
-  try {
-    await client.connect();
+// async function run() {
+//   try {
+//     await client.connect();
+
+client.connect(()=>{
+  console.log("collection successfully done!")
+}).catch(console.dir)
 
     const db = client.db("HouseRent");
     const usercollection = db.collection("user");
@@ -459,12 +463,14 @@ app.get("/reject-feedback/:id",ownerVerify, async (req, res) => {
 
 // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
-  } finally {
+//   } finally {
   
-  }
-}
-run().catch(console.dir);
+//   }
+// }
+// run().catch(console.dir);
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
+
+module.exports=app
