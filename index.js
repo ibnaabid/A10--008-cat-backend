@@ -429,7 +429,7 @@ app.get("/reject-feedback/:id",ownerVerify, async (req, res) => {
       }
     });
 
-    app.get("/favorites",tenantVerify, async (req, res) => {
+    app.get("/favorites", async (req, res) => {
       const result = await favoriteProperty.find().toArray();
       res.send(result);
     });
@@ -457,7 +457,7 @@ app.get("/reject-feedback/:id",ownerVerify, async (req, res) => {
     });
 
 
-await client.db("admin").command({ ping: 1 });
+// await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
   
