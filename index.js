@@ -315,7 +315,7 @@ app.get("/allhome",tenantVerify, async (req, res) => {
 });
 
 
-app.get("/reject-feedback",ownerVerify, async (req, res) => {
+app.get("/reject-feedback", async (req, res) => {
   try {
     const result = await feedbackCollection.find().toArray();
     res.send(result);
