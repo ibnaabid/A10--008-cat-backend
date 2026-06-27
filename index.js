@@ -150,22 +150,6 @@ const adminVerify = async (req, res, next) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     // ---------- Reviews ----------
     app.post("/reviews", async (req, res) => {
       const body = req.body;
@@ -214,7 +198,7 @@ app.get("/Bookings",tenantVerify, async (req, res) => {
 
 
 // allhome a pagination
-app.get("/allhome",tenantVerify, async (req, res) => {
+app.get("/allhome", async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 3;
