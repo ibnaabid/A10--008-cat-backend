@@ -28,13 +28,10 @@ const client = new MongoClient(uri, {
   }
 });
 
-// async function run() {
-//   try {
-//     await client.connect();
 
-client.connect(()=>{
-  console.log("collection successfully done!")
-}).catch(console.dir)
+ client.connect();
+console.log("MongoDB Connected");
+
 
     const db = client.db("HouseRent");
     const usercollection = db.collection("user");
