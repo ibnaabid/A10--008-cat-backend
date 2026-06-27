@@ -198,7 +198,7 @@ app.get("/Bookings",tenantVerify, async (req, res) => {
 
 
 // allhome a pagination
-app.get("/allhome", async (req, res) => {
+app.get("/allhome",tenantVerify, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 3;
