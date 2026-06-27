@@ -254,7 +254,7 @@ app.get("/allhome", async (req, res) => {
       res.send(result);
     });
 
-    app.get("/allhome/:id",ownerVerify, async (req, res) => {
+    app.get("/allhome/:id", async (req, res) => {
       try {
         const { id } = req.params;
         const result = await collection.findOne({ _id: new ObjectId(id) });
@@ -322,12 +322,26 @@ app.get("/reject-feedback", async (req, res) => {
   }
 });
 
-app.get("/reject-feedback/:id",ownerVerify, async (req, res) => {
-  const {id} = req.params
-  const result = await feedbackCollection.findOne({
-    homeId : new ObjectId(id)
-  })
-  res.send(result);
+app.get("/reject-feedback/:id", ownerVerify, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await feedbackCollection.findOne({
+      homeId: new ObjectId(id),
+    });
+
+    if (!result) {
+      return res.status(404).send({
+        feedback: "No feedback found",
+      });
+    }
+
+    return res.send(result);
+  } catch (error) {
+    return res.send(500).json({
+      error: error.message,
+    });
+  }
 });
 
 
